@@ -29,22 +29,26 @@
 #define OFF HIGH
 #define SCANCODE_DIFF 8 // they cut a few values from the front of the ascii table so we have to compensate
 #define PAUSE_ON_NEWLINES 1
+#define NUM_COMMANDS 2
 
-#define SWITCHINDEX 0
-#define COMMANDINDEX 1
+// list of pins that switches are wired to
+const int switchList[NUM_COMMANDS] = {0,2};
 
-const int switchList[2] = {0,2};
+// list of string commands that switches have. note that the order is the same as above; pin 0 has "a"
+const char* commandList[NUM_COMMANDS] = {"a","d"};
 
-const char* commandList[2] = {"a","d"};
-
-char scancodeArr[][2] = { 
+// advanced version only
+/*char scancodeArr[NUM_COMMANDS][2] = { 
+    {MOD_ALT_LEFT,43},
     {MOD_ALT_LEFT,43}
-};
+};*/
 
-int debounce[2] = {0,0};
+//debounce array. when 0, keys can be pressed. allows keys to debounce separately, so speed is less limited
+int debounce[NUM_COMMANDS] = {0,0};
 
 void setup() {
-  for(int i = 0; i < 2/*sizeof(commandList)*/; i++){
+  // set all pins we are checking for input to high
+  for(int i = 0; i < NUM_COMMANDS/*sizeof(commandList)*/; i++){
     pinMode(switchList[i], OUTPUT);
     digitalWrite(switchList[i], HIGH);
     pinMode(switchList[i], INPUT);
@@ -54,7 +58,7 @@ void setup() {
 void loop() {
   DigiKeyboard.update();
 
-  for (int i = 0; i < 2/*sizeof(switchList)*/; i++){
+  for (int i = 0; i < NUM_COMMANDS; i++){
     if(digitalRead(switchList[i]) == ON && debounce[i] == 0){
       debounce[i] = 50;
       printString(commandList[i]);
@@ -70,7 +74,6 @@ void printString(const char string[]){
     printLetter(string[i]);
   }
 }
-
 
 void printLetter(unsigned int letter){
   unsigned int scancode = pgm_read_byte_near(ascii_to_scan_code_table + letter - SCANCODE_DIFF);
